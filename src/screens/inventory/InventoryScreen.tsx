@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Button, StyleSheet, TextInput, Alert } from 'react-native';
 import { InventoryRepositoryImpl } from '../../data/repositories/InventoryRepositoryImpl';
 import { Product } from '../../domain/models/Product';
+import { ProductItem } from '../../components/ProductItem';
+import { AdjustInventoryUseCase } from '../../domain/usecases/AdjustInventoryUseCase';
 
 const inventoryRepo = new InventoryRepositoryImpl();
+const adjustInventoryUC = new AdjustInventoryUseCase(inventoryRepo);
 
 const InventoryScreen: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -41,6 +44,16 @@ const InventoryScreen: React.FC = () => {
     await load();
   }
 
+  async function inc(p: Product) {
+    await adjustInventoryUC.execute(p.id, 1, 'Ajuste manual +1');
+    await load();
+  }
+  async function dec(p: Product) {
+    if (p.currentQuantity <= 0) return;
+    await adjustInventoryUC.execute(p.id, -1, 'Ajuste manual -1');
+    await load();
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Estoque</Text>
@@ -50,13 +63,17 @@ const InventoryScreen: React.FC = () => {
         <TextInput placeholder="Preço" style={styles.input} value={price} onChangeText={setPrice} keyboardType="numeric" />
       </View>
       <Button title="Adicionar" onPress={addProduct} />
-      <FlatList
+      <FlatList<Product>
         style={{ marginTop: 16 }}
         data={products}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
+        keyExtractor={(item: Product) => item.id}
+        renderItem={({ item }: { item: Product }) => (
           <View style={styles.item}>
-            <Text>{item.name} - Qtd: {item.currentQuantity} - Min: {item.minQuantity}</Text>
+            <ProductItem product={item} />
+            <View style={styles.actions}>
+              <Button title="-1" onPress={() => dec(item)} />
+              <Button title="+1" onPress={() => inc(item)} />
+            </View>
           </View>
         )}
         ListEmptyComponent={<Text>Nenhum produto.</Text>}
@@ -83,7 +100,8 @@ const styles = StyleSheet.create({
     borderColor: '#eee',
     borderRadius: 6,
     marginBottom: 8
-  }
+  },
+  actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }
 });
 
 export default InventoryScreen;
