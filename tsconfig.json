@@ -17,5 +17,5 @@
       "react-native"
     ]
   },
-  "include": ["src", "App.tsx", "**/*.ts", "**/*.tsx"]
+  "include": ["src", "App.tsx", "**/*.ts", "**/*.tsx", "declarations.d.ts"]
 }

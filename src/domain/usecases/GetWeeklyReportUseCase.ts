@@ -20,16 +20,19 @@ export class GetWeeklyReportUseCase {
     private inventoryRepo: InventoryRepository
   ) {}
 
-  async execute(): Promise<WeeklyReportResult> {
+  async execute(range?: { from: number; to: number }): Promise<WeeklyReportResult> {
     const sales = await this.salesRepo.list();
     const products = await this.inventoryRepo.getAll();
 
     const now = Date.now();
     const msWeek = WEEKLY_REPORT_DAYS * 24 * 60 * 60 * 1000;
+    const from = range?.from ?? now - msWeek;
+    const to = range?.to ?? now;
+
     const map = new Map<string, WeeklyProductSummary>();
 
     for (const s of sales) {
-      if (now - s.timestamp > msWeek) continue;
+      if (s.timestamp < from || s.timestamp > to) continue;
       for (const it of s.items) {
         const prod = products.find(p => p.id === it.productId);
         const name = prod?.name ?? it.productId;

@@ -6,4 +6,5 @@ export interface Product {
   minQuantity: number;
   price: number;
   active: boolean;
+  barcode?: string; // optional EAN/UPC
 }
