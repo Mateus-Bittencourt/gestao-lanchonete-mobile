@@ -1,0 +1,2 @@
+export const LOW_STOCK_THRESHOLD_PERCENT = 0.2;
+export const WEEKLY_REPORT_DAYS = 7;
